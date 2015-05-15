@@ -17,8 +17,18 @@ TC.prototype = {
             return {type: "tag", value: selector};
         }
     },
-    ready: function () {
-
+    ready: function (fn) {  //待修改成兼容版本
+        if (typeof document.addEventListener != "undefined") {
+            this.addEvent(document, "DOMContentLoaded", function () {
+                fn();
+                TC.prototype.rmEvent(document, "DOMContentLoaded", arguments.callee);
+            });
+        } else {
+            this.addEvent(window, "load", function () {
+                fn();
+                TC.prototype.rmEvent(window, "load", arguments.callee);
+            });
+        }
     },
     //Event Interface
     eFit: function (e) {   //修正默认事件 不不知道怎么调用！！
@@ -243,7 +253,8 @@ TC.prototype = {
             }
             return this;
         } else if (typeof selector == "function") {
-            return new TC();    //TODO
+            this.ready(selector);
+            return this;
         } else if (typeof selector == "object") {
             this._elements = [selector];
             return this;
@@ -291,6 +302,7 @@ TC.prototype = {
                 (s = us.match(/opr\/([\d.]+)/)) ? sys.opera = s[1] :
                     (s = us.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
                         (s = us.match(/version([\d.]+).*safari/)) ? sys.ie = s[1] : 0;
+        if (/webkit/.test(us)) sys.webkit = us.match(/webkit\/([\d.]+)/)[1];
         return sys;
     }(),
     clientSize: function () {
