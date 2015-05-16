@@ -17,7 +17,7 @@ TC.prototype = {
             return {type: "tag", value: selector};
         }
     },
-    ready: function (fn) {  //´ıĞŞ¸Ä³É¼æÈİ°æ±¾
+    ready: function (fn) {  //æœªå¯¹ä½ç‰ˆæœ¬å’ŒIEåšå…¼å®¹
         if (typeof document.addEventListener != "undefined") {
             this.addEvent(document, "DOMContentLoaded", function () {
                 fn();
@@ -31,7 +31,7 @@ TC.prototype = {
         }
     },
     //Event Interface
-    eFit: function (e) {   //ĞŞÕıÄ¬ÈÏÊÂ¼ş ²»²»ÖªµÀÔõÃ´µ÷ÓÃ£¡£¡
+    eFit: function (e) {
         var event = e || window.event;
         if (typeof event.preventDefault == "undefined") {
             event.preventDefault = function () {
@@ -60,10 +60,10 @@ TC.prototype = {
                 obj.events = {};
             }
             var es = obj.events[type];
-            if (!es) {   //ÅĞ¶ÏÊÇ·ñÒÑÓĞÊÂ¼ş´æÔÚ
+            if (!es) {
                 es = obj.events[type] = [];
                 es[0] = fn;
-                obj[type + "ID"] = 0;  //±£´æÊÂ¼ş°ó¶¨Ë³Ğò
+                obj[type + "ID"] = 0;
                 obj["on" + type] = this.eventExec;
             } else {
                 var flag = true;
@@ -85,7 +85,7 @@ TC.prototype = {
             obj.removeEventListener(type, fn);
         } else {  //ie
             var es = obj.events[type];
-            if (es) {   //ÅĞ¶ÏÊÇ·ñÒÑÓĞÊÂ¼ş´æÔÚ
+            if (es) {
                 for (i in es) {
                     if (es[i] == fn) {
                         delete es[i];
@@ -96,13 +96,13 @@ TC.prototype = {
         }
         return this;
     },
-    bind: function (type, fn) { //°ó¶¨ÊÂ¼ş
+    bind: function (type, fn) { //ç»‘å®šäº‹ä»¶
         for (var i = this._elements.length; i--;) {
             this.addEvent(this._elements[i], type, fn);
         }
         return this;
     },
-    unbind: function (type, fn) { //°ó¶¨ÊÂ¼ş
+    unbind: function (type, fn) { //ç§»é™¤äº‹ä»¶
         for (var i = this._elements.length; i--;) {
             this.rmEvent(this._elements[i], type, fn);
         }
@@ -322,16 +322,17 @@ TC.prototype = {
     //CSS Interface
     css: function (attr, value) {
         if(arguments.length === 1){
-            if(typeof this._elements[0][attr] != "undefined"){
-                //alert(this._elements[0][attr])
-                return this._elements[0][attr];
-            }else if(typeof this._elements[0].style != "undefined"){
-                return this._elements[0].style[attr];
-            }else if(typeof window.getComputedStyle != "undefined"){
-                return window.getComputedStyle(this._elements[0],null)[attr];
-            } else{
-                return this._elements[0].currentStyle(attr);
+            ele = this._elements[0];
+            if (typeof ele[attr] != "undefined") {
+                return ele[attr];
             }
+            if (typeof ele.style != "undefined") {
+                return ele.style[attr];
+            }
+            if (typeof window.getComputedStyle != "undefined") {
+                return window.getComputedStyle(ele, null)[attr];
+            }
+            return ele.currentStyle(attr);
         }else{
             for (var i = this._elements.length; i--;) {
                 this._elements[i].style[attr] = value;
@@ -427,7 +428,7 @@ TC.prototype = {
     }
 };
 
-//Ìí¼Ó²å¼ş
+//ï¿½ï¿½Ó²ï¿½ï¿½
 TC.prototype.ectend = function (name, fn) {
     TC.prototype[name] = fn;
 };
