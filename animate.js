@@ -3,7 +3,7 @@
  * Date : 2015/5/16.
  * Time : 15:21
  */
-//TC.prototype.extend("animate",animate);
+TC.prototype.extend("animate", animate);
 function animate(obj) {
     /**
      * attr:属性
@@ -13,21 +13,6 @@ function animate(obj) {
      * speed:速度
      * callback:回调函数
      */
-    var box = document.getElementById("box"),
-        type = obj.type ? "constant" : "buffer",
-        attr = obj.attr ? obj.attr : left,
-        start = obj.start || parseFloat(window.getComputedStyle(box, null)[attr]),
-        increment = obj.increment,
-        target = increment ? increment + start : obj.target ? obj.target : "undefined",
-        step = parseInt(obj.step) || 10,
-        speed = (typeof obj.speed == "string" ?
-            (obj.speed == "slow" ? 100 : (obj.speed == "middle" ? 50 : (obj.speed == "fast" ? 10 : 50))) :
-            (typeof obj.speed == "number" ? parseInt(obj.speed) : 100));
-
-    if (!(increment || target))throw new Error("increment|target 必须有一个赋值");
-    if (start > target)step = -step;
-    attr == "opacity" ? setOpacity() : setAttr();
-
     function setOpacity() {
         var _target = parseInt(target * 100),
             _start = parseInt(start * 100);
@@ -39,8 +24,14 @@ function animate(obj) {
 
         clearInterval(box.timer);
         box.timer = setInterval(function () {
-            _start = parseInt(box.style[attr] * 100);
-            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target)) {
+            //特别注意小数的运算
+            _start = step > 0 ? parseInt(Math.ceil(_this.getStyle(box, "opacity") * 100)) : parseInt(Math.floor(_this.getStyle(box, "opacity") * 100));
+
+            if (type == "buffer") {
+                step = step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
+            }
+
+            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target) || (step == 0)) {
                 box.style.opacity = _target / 100;
                 box.style.filter = "alpha(opacity=" + _target + ")";
                 clearInterval(box.timer);
@@ -54,11 +45,15 @@ function animate(obj) {
     function setAttr() {
         var _target = parseInt(target),
             _start = parseInt(start);
+
         box.style[attr] = _start + "px";
         clearInterval(box.timer);
         box.timer = setInterval(function () {
-            _start = parseInt(box.style[attr]);
-            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target)) {
+            _start = parseInt(_this.getStyle(box, attr));
+            if (type == "buffer") {
+                step = step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
+            }
+            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target) || ((step == 0))) {
                 box.style[attr] = target + "px";
                 clearInterval(box.timer);
             } else {
@@ -66,6 +61,25 @@ function animate(obj) {
             }
         }, speed);
     }
+
+    for (var i = this._elements.length; i--;) {
+        var _this = this,
+            box = this._elements[i],
+            type = obj.type == "constant" ? "constant" : "buffer",
+            attr = obj.attr ? obj.attr : left,
+            start = typeof obj.start == "undefined" ? parseFloat(window.getComputedStyle(box, null)[attr]) : obj.start,
+            increment = obj.increment,
+            target = typeof increment != "undefined" ? increment + start : typeof obj.target != "undefined" ? obj.target : "undefined",
+            step = parseInt(obj.step) || 10,
+            speed = (typeof obj.speed == "string" ?
+                (obj.speed == "slow" ? 100 : (obj.speed == "middle" ? 50 : (obj.speed == "fast" ? 10 : 50))) :
+                (typeof obj.speed == "number" ? parseInt(obj.speed) : 50));
+        if (!(typeof increment || typeof target))throw new Error("increment|target 必须有一个赋值");
+        if (start > target)step = -step;
+        attr == "opacity" ? setOpacity() : setAttr();
+    }
+
+
 
 }
 

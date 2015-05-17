@@ -320,22 +320,27 @@ TC.prototype = {
     },
 
     //CSS Interface
+    getStyle: function (element, attr) {    //获取样式
+        if (typeof element[attr] != "undefined") {
+            return element[attr];
+        }
+        if (typeof element.style != "undefined" && element.style[attr]) {
+            return element.style[attr];
+        }
+        if (typeof window.getComputedStyle != "undefined") {
+            return window.getComputedStyle(element, null)[attr];
+        }
+        return element.currentStyle(attr);
+    },
+    setStyle: function (element, attr, value) {  //设置样式
+        element.style[attr] = value
+    },
     css: function (attr, value) {
         if(arguments.length === 1){
-            ele = this._elements[0];
-            if (typeof ele[attr] != "undefined") {
-                return ele[attr];
-            }
-            if (typeof ele.style != "undefined") {
-                return ele.style[attr];
-            }
-            if (typeof window.getComputedStyle != "undefined") {
-                return window.getComputedStyle(ele, null)[attr];
-            }
-            return ele.currentStyle(attr);
+            return this.getStyle(this._elements[0], attr);
         }else{
             for (var i = this._elements.length; i--;) {
-                this._elements[i].style[attr] = value;
+                this.setStyle(this._elements[i], attr, value);
             }
             return this;
         }
@@ -428,8 +433,8 @@ TC.prototype = {
     }
 };
 
-//��Ӳ��
-TC.prototype.ectend = function (name, fn) {
+//插件接口
+TC.prototype.extend = function (name, fn) {
     TC.prototype[name] = fn;
 };
 
