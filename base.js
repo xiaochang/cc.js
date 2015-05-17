@@ -305,18 +305,26 @@ TC.prototype = {
         if (/webkit/.test(us)) sys.webkit = us.match(/webkit\/([\d.]+)/)[1];
         return sys;
     }(),
-    clientSize: function () {
+    clientSize: function (attr) {
         if (typeof window.innerWidth != "undefined") {
-            return {
+            var _clientSize = {
                 width: window.innerWidth,
                 height: window.innerHeight
             };
         } else {
-            return {
+            var _clientSize = {
                 width: document.body.clientWidth || document.documentElement.clientWidth,
                 height: document.body.clientHeight || document.documentElement.clientHeight
             };
         }
+        return attr ? _clientSize[attr] : _clientSize;
+    },
+    getScroll: function (attr) {
+        var scroll = {
+            scrollY: document.documentElement.scrollTop || document.body.scrollTop,
+            scrollX: document.documentElement.scrollLeft || document.body.scrollLeft
+        };
+        return attr ? scroll[attr] : scroll;
     },
 
     //CSS Interface
@@ -330,7 +338,7 @@ TC.prototype = {
         if (typeof window.getComputedStyle != "undefined") {
             return window.getComputedStyle(element, null)[attr];
         }
-        return element.currentStyle(attr);
+        return element.currentStyle[attr];
     },
     setStyle: function (element, attr, value) {  //设置样式
         element.style[attr] = value

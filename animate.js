@@ -15,68 +15,106 @@ function animate(obj) {
      */
     function setOpacity() {
         var _target = parseInt(target * 100),
-            _start = parseInt(start * 100);
-
+            _start = isNaN(start) ? parseInt(_that.getStyle(_box, "filter").match(/\d+/)[0]) : parseInt(start * 100),
+            _step = step;
         _target > 100 ? _target = 100 : _target < 0 ? _target = 0 : _target;    //以防超过范围
-
-        box.style.opacity = _start / 100;    //W3C初始化
-        box.style.filter = "alpha(opacity=" + _start + ")";   //IE初始化
-
-        clearInterval(box.timer);
-        box.timer = setInterval(function () {
+        _start > 100 ? _start = 100 : _start < 0 ? _start = 0 : _start;    //以防超过范围
+        _box.style.opacity = _start / 100;    //W3C初始化
+        _box.style.filter = "alpha(opacity=" + _start + ")";   //IE初始化
+        _box.timer["opacity"] = setInterval(function () {
             //特别注意小数的运算
-            _start = step > 0 ? parseInt(Math.ceil(_this.getStyle(box, "opacity") * 100)) : parseInt(Math.floor(_this.getStyle(box, "opacity") * 100));
+            _start = _step > 0 ? parseInt(Math.ceil(_that.getStyle(_box, "opacity") * 100)) : parseInt(Math.floor(_that.getStyle(_box, "opacity") * 100));
 
             if (type == "buffer") {
-                step = step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
+                _step = _step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
             }
 
-            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target) || (step == 0)) {
-                box.style.opacity = _target / 100;
-                box.style.filter = "alpha(opacity=" + _target + ")";
-                clearInterval(box.timer);
+            if ((_step > 0 && _start + _step >= _target) || (_step < 0 && _start + _step <= _target) || (_step == 0)) {
+                _box.style.opacity = _target / 100;
+                _box.style.filter = "alpha(opacity=" + _target + ")";
+                if (timerFlag) {
+                    if (timerFlag) {
+                        for (var j in _box.timer) {
+                            clearInterval(_box.timer[j]);
+                        }
+                        if (obj.fn)obj.fn();
+                    }
+                }
+                timerFlag = true;
             } else {
-                box.style.opacity = (_start + step) / 100;
-                box.style.filter = "alpha(opacity=" + _start + step + ")";
+                _box.style.opacity = (_start + _step) / 100;
+                _box.style.filter = "alpha(opacity=" + _start + _step + ")";
+                timerFlag = false;
             }
         }, speed);
     }
 
-    function setAttr() {
+    function setAttr(attr) {
         var _target = parseInt(target),
-            _start = parseInt(start);
+            _start = parseInt(start),
+            _step = step;
 
-        box.style[attr] = _start + "px";
-        clearInterval(box.timer);
-        box.timer = setInterval(function () {
-            _start = parseInt(_this.getStyle(box, attr));
+        _box.style[attr] = _start + "px";
+        _box.timer[attr] = setInterval(function () {
+            _start = parseInt(_that.getStyle(_box, attr));
             if (type == "buffer") {
-                step = step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
+                _step = _step > 0 ? Math.ceil((_target - _start) / speed) : Math.floor((_target - _start) / speed);
             }
-            if ((step > 0 && _start + step > _target) || (step < 0 && _start + step < _target) || ((step == 0))) {
-                box.style[attr] = target + "px";
-                clearInterval(box.timer);
+            if ((_step > 0 && _start + _step >= _target) || (_step < 0 && _start + _step <= _target) || ((_step == 0))) {
+                _box.style[attr] = _target + "px";
+                if (timerFlag) {
+                    for (var j in _box.timer) {
+                        clearInterval(_box.timer[j]);
+                    }
+                    if (obj.fn)obj.fn();
+                }
+                timerFlag = true;
             } else {
-                box.style[attr] = _start + step + "px";
+                _box.style[attr] = _start + _step + "px";
+                timerFlag = false;
             }
         }, speed);
     }
 
     for (var i = this._elements.length; i--;) {
-        var _this = this,
-            box = this._elements[i],
+        var _that = this,
+            timerFlag = false;
+        _box = _that._elements[i],
+            mul = obj.mul,  //接受多组动画
             type = obj.type == "constant" ? "constant" : "buffer",
-            attr = obj.attr ? obj.attr : left,
-            start = typeof obj.start == "undefined" ? parseFloat(window.getComputedStyle(box, null)[attr]) : obj.start,
-            increment = obj.increment,
-            target = typeof increment != "undefined" ? increment + start : typeof obj.target != "undefined" ? obj.target : "undefined",
             step = parseInt(obj.step) || 10,
             speed = (typeof obj.speed == "string" ?
                 (obj.speed == "slow" ? 100 : (obj.speed == "middle" ? 50 : (obj.speed == "fast" ? 10 : 50))) :
                 (typeof obj.speed == "number" ? parseInt(obj.speed) : 50));
-        if (!(typeof increment || typeof target))throw new Error("increment|target 必须有一个赋值");
+        if (mul == "undefined") {
+            var attr = obj.attr ? obj.attr : "left",
+                start = typeof obj.start == "undefined" ? parseFloat(_that.getStyle(_box, attr)) : obj.start,
+                increment = obj.increment,
+                target = typeof increment != "undefined" ? increment + start : typeof obj.target != "undefined" ? obj.target : "undefined";
+        }
+
+        if (!(typeof increment || typeof target || typeof mul))throw new Error("increment|target 必须有一个赋值");
         if (start > target)step = -step;
-        attr == "opacity" ? setOpacity() : setAttr();
+        if (_box.timer) {
+            for (var i in _box.timer) {
+                clearInterval(_box.timer[i]);
+            }
+        } else {
+            _box.timer = {};
+        }
+
+        if (mul != "undefined") {
+            for (var i in mul) {
+                target = mul[i];
+                attr = i;
+                start = parseFloat(_that.getStyle(_box, attr));
+                attr == "opacity" ? setOpacity() : setAttr(attr);
+            }
+        } else {
+            attr == "opacity" ? setOpacity() : setAttr(attr);
+        }
+
+        return this;
     }
 
 
