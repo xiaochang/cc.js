@@ -78,15 +78,15 @@ function animate(obj) {
 
     for (var i = this._elements.length; i--;) {
         var _that = this,
-            timerFlag = false;
-        _box = _that._elements[i],
+            timerFlag = false,
+            _box = _that._elements[i],
             mul = obj.mul,  //接受多组动画
             type = obj.type == "constant" ? "constant" : "buffer",
             step = parseInt(obj.step) || 10,
             speed = (typeof obj.speed == "string" ?
                 (obj.speed == "slow" ? 100 : (obj.speed == "middle" ? 50 : (obj.speed == "fast" ? 10 : 50))) :
                 (typeof obj.speed == "number" ? parseInt(obj.speed) : 50));
-        if (mul == "undefined") {
+        if (typeof mul == "undefined") {
             var attr = obj.attr ? obj.attr : "left",
                 start = typeof obj.start == "undefined" ? parseFloat(_that.getStyle(_box, attr)) : obj.start,
                 increment = obj.increment,
@@ -103,7 +103,7 @@ function animate(obj) {
             _box.timer = {};
         }
 
-        if (mul != "undefined") {
+        if (typeof mul != "undefined") {
             for (var i in mul) {
                 target = mul[i];
                 attr = i;
@@ -113,11 +113,7 @@ function animate(obj) {
         } else {
             attr == "opacity" ? setOpacity() : setAttr(attr);
         }
-
-        return this;
     }
-
-
-
+    return this;
 }
 

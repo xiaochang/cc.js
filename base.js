@@ -130,6 +130,18 @@ TC.prototype = {
         }
         return this;
     },
+    toggle: function () {
+        var fnList = arguments,
+            fucount = fnList.length,
+            _count = 0;
+        for (var i = this._elements.length; i--;) {
+            this.addEvent(this._elements[i], "click", function () {
+                fnList[_count % fucount]();
+                _count++;
+            });
+        }
+        return this;
+    },
     //DOM Interface
     id: function (id) {
         return [document.getElementById(id)] || document.all[id] || [];
@@ -187,6 +199,20 @@ TC.prototype = {
             this._elements = childElement;
         } else {
             this._elements = document.lastElementChild || document.children[document.children.length - 1];
+        }
+        return this;
+    },
+    next: function () {
+        var _len = this._elements.length;
+        if (_len) {
+            this._elements = this._elements[0].nextElementSibling || this._elements[0].nextSibling;
+        }
+        return this;
+    },
+    prev: function () {
+        var _len = this._elements.length;
+        if (_len) {
+            this._elements = this._elements[0].previousElementSibling || this._elements[0].previousSibling;
         }
         return this;
     },
