@@ -31,20 +31,17 @@ TC.prototype.ready = function (fn) {  //未对低版本和IE做兼容
     }
 };
 TC.prototype.ltrim = function (value) {
-    if (value) {
-        return value.replace(/^\s*/g, "");
-    }
+    return value.replace(/^\s*/g, "");
 };
 TC.prototype.rtrim = function (value) {
-    if (value) {
-        return value.replace(/\s*$/g, "");
-    }
+    return value.replace(/\s*$/g, "");
 };
 TC.prototype.trim = function (value) {
-    if (value) {
-        return value.replace(/(^\s*)|(\s*$)/g, "");
-    }
+    return value.replace(/(^\s*)|(\s*$)/g, "");
 };
+TC.prototype.len = function () {
+    return this._elements.length;
+}
 
 //Event Interface
 TC.prototype.eFit = function (e) {
@@ -254,6 +251,13 @@ TC.prototype.eq = function (num) { //return nth Child
     }
     return this;
 };
+TC.prototype.get = function (num) { //return nth Child
+    var _len = this._elements.length;
+    if (_len) {
+        this._elements = [this._elements[num]];
+    }
+    return this;
+};
 TC.prototype.child = function () {
     var _len = this._elements.length;
     if (_len) {
@@ -339,6 +343,25 @@ TC.prototype.text = function (text) {
     } else {
         return this._elements[0].innerText || this._elements[0].textContent;
     }
+};
+TC.prototype.val = function (val) {
+    if (arguments.length) {
+        for (var i = this._elements.length; i--;) {
+            this._elements[i].value = val;
+        }
+        return this;
+    } else {
+        return this._elements[0].value;
+    }
+};
+TC.prototype.add = function (ele) {
+    for (var i = this._elements.length; i--;) {
+        this._elements[i].appendChild(ele);
+    }
+    return this;
+};
+TC.prototype.dom = function (num) {
+    return this._elements[num];
 };
 
 //BOM Interface
