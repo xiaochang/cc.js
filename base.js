@@ -41,7 +41,17 @@ TC.prototype.trim = function (value) {
 };
 TC.prototype.len = function () {
     return this._elements.length;
-}
+};
+TC.prototype.attr = function (attr, value) {
+    if (arguments.length == 2) {
+        for (var i = this._elements.length; i--;) {
+            this._elements[i].setAttribute(attr, value);
+        }
+        return this;
+    } else {
+        return this._elements[0][attr] || this._elements[0].getAttribute(attr);
+    }
+};
 
 //Event Interface
 TC.prototype.eFit = function (e) {
@@ -235,7 +245,7 @@ TC.prototype.prev = function () {
     }
     return this;
 };
-TC.prototype.eq = function (num) { //return nth Child
+TC.prototype.get = function (num) { //return nth Child
     var _len = this._elements.length;
     if (_len) {
         var findElement = null, childElement = [];
@@ -251,7 +261,7 @@ TC.prototype.eq = function (num) { //return nth Child
     }
     return this;
 };
-TC.prototype.get = function (num) { //return nth Child
+TC.prototype.eq = function (num) { //return nth Child
     var _len = this._elements.length;
     if (_len) {
         this._elements = [this._elements[num]];
@@ -275,6 +285,15 @@ TC.prototype.child = function () {
         this._elements = document.children;
     }
     return this;
+};
+TC.prototype.index = function () {
+    var children = this._elements[0].parentNode.children;
+    for (var i = 0, len = children.length; i < len; i++) {
+        if (children[i] == this._elements[0]) {
+            return i;
+        }
+    }
+    return -1;
 };
 TC.prototype.find = function (selector) {
     this.getEle(selector);
@@ -398,14 +417,25 @@ TC.prototype.getScroll = function (attr) {
     };
     return attr ? scroll[attr] : scroll;
 };
+TC.prototype.offsetTop = function () {
+    var top = this._elements[0].offsetTop,
+        parent = this._elements[0].offsetParent;
+    while (parent !== null) {
+        top += parent.offsetTop;
+        parent = parent.offsetParent;
+    }
+    return top;
+};
+
 //使元素相对视口居中
 TC.prototype.center = function () {
     var clientSize = this.clientSize(),
+        scrollXY = this.getScroll(),
         ele;
     for (var i = this._elements.length; i--;) {
         ele = this._elements[i];
-        ele.style.top = clientSize.height / 2 - ele.offsetHeight / 2 + "px";
-        ele.style.left = clientSize.width / 2 - ele.offsetWidth / 2 + "px";
+        ele.style.top = scrollXY.scrollY + clientSize.height / 2 - ele.offsetHeight / 2 + "px";
+        ele.style.left = scrollXY.scrollX + clientSize.width / 2 - ele.offsetWidth / 2 + "px";
     }
     return this;
 };
@@ -417,16 +447,17 @@ TC.prototype.resize = function () {
             top = this.getStyle(ele, "offsetTop"),
             left = this.getStyle(ele, "offsetLeft"),
             objWidth = this.getStyle(ele, "offsetWidth"),
-            objHeight = this.getStyle(ele, "offsetHeight");
-        if (left < 0) {
-            left = 0;
-        } else if (left > clientSize.width - objWidth) {
-            left = clientSize.width - objWidth;
+            objHeight = this.getStyle(ele, "offsetHeight"),
+            scrollSize = this.getScroll();
+        if (left < scrollSize.scrollX) {
+            left = scrollSize.scrollX;
+        } else if (left > clientSize.width + scrollSize.scrollX - objWidth) {
+            left = clientSize.width + scrollSize.scrollX - objWidth;
         }
-        if (top < 0) {
-            top = 0;
-        } else if (top > clientSize.height - objHeight) {
-            top = clientSize.height - objHeight;
+        if (top < scrollSize.scrollY) {
+            top = scrollSize.scrollY;
+        } else if (top > clientSize.height + scrollSize.scrollY - objHeight) {
+            top = clientSize.height + scrollSize.scrollY - objHeight;
         }
         this.setStyle(ele, "left", left + "px");
         this.setStyle(ele, "top", top + "px");
@@ -539,7 +570,13 @@ TC.prototype.hide = function () {
     }
     return this;
 };
-
+TC.prototype.opacity = function (num) {
+    for (var i = this._elements.length; i--;) {
+        this._elements[i].style.opacity = num / 100;
+        this._elements[i].style.filter = "alpha(opacity=" + num + ")";
+    }
+    return this;
+};
 
 //插件接口
 TC.prototype.extend = function (name, fn) {

@@ -13,11 +13,12 @@ function drag(obj) {
      */
     for (var i = this._elements.length; i--;) {
         var ele = this._elements[i],
+            scrollSize = this.getScroll(),
             _this = this;
         this.bind("mousedown", function (e) {
             if (obj.start)obj.start();
-            var diffX = e.clientX - _this.getStyle(ele, "offsetLeft"),
-                diffY = e.clientY - _this.getStyle(ele, "offsetTop"),
+            var diffX = e.clientX + scrollSize.scrollX - _this.getStyle(ele, "offsetLeft"),
+                diffY = e.clientY + scrollSize.scrollY - _this.getStyle(ele, "offsetTop"),
                 objWidth = _this.getStyle(ele, "offsetWidth"),
                 objHeight = _this.getStyle(ele, "offsetHeight"),
                 clientSize = _this.clientSize(),
@@ -39,20 +40,24 @@ function drag(obj) {
             }
             function move(e) {
                 var e = _this.eFit(e),
-                    left = e.clientX - diffX,
-                    top = e.clientY - diffY;
+                    left = e.clientX + scrollSize.scrollX - diffX,
+                    top = e.clientY + scrollSize.scrollY - diffY;
                 if (!_this.trim(ele.innerHTML)) {
                     e.preventDefault();
                 }
                 if (left < 0) {
                     left = 0;
-                } else if (left > clientSize.width - objWidth) {
-                    left = clientSize.width - objWidth;
+                } else if (left < scrollSize.scrollX) {
+                    left = scrollSize.scrollX;
+                } else if (left > clientSize.width + scrollSize.scrollX - objWidth) {
+                    left = clientSize.width + scrollSize.scrollX - objWidth;
                 }
                 if (top < 0) {
                     top = 0;
-                } else if (top > clientSize.height - objHeight) {
-                    top = clientSize.height - objHeight;
+                } else if (top < scrollSize.scrollY) {
+                    top = scrollSize.scrollY;
+                } else if (top > clientSize.height + scrollSize.scrollY - objHeight) {
+                    top = clientSize.height + scrollSize.scrollY - objHeight;
                 }
                 _this.setStyle(ele, "left", left + "px").setStyle(ele, "top", top + "px");
                 if (typeof this.setCapture != 'undefined') {
